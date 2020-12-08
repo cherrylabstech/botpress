@@ -107,6 +107,19 @@ class BPFS {
       const archive = await createArchiveFromFolder(this.sourceDir, pushedArchiveIgnoredFiles)
       const axiosClient = this._getPushAxiosClient(archive.length)
 
+      if (useForce) {
+        console.info(chalk.blue(`Force pushing local changes to ${this.serverUrl}...`))
+
+        await axiosClient.post('update', archive)
+
+        if (!keepRevisions) {
+          await this._clearRevisions(this.sourceDir)
+        }
+
+        console.info(chalk.green('Successfully force pushed to remote server!'))
+        return
+      }
+
       console.info(
         chalk.blue(`Sending archive to server for comparison... (archive size: ${bytesToString(archive.length)})`)
       )
