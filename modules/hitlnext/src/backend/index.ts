@@ -11,6 +11,7 @@ import migrate from './migrate'
 import upsertAgentRoles from './workspace'
 
 export interface StateType {
+  cacheAgent?: Function
   cacheHandoff?: Function
   expireHandoff?: Function
   timeouts?: Dictionary<NodeJS.Timeout>
