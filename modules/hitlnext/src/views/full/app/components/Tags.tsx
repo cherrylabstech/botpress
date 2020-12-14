@@ -17,18 +17,16 @@ const StringMultiSelect = MultiSelect.ofType<string>()
 
 export const Tags: FC<Props> = ({ handoff, api }) => {
   const { tags, id } = handoff
-  const { dispatch, state } = useContext(Context)
+  const { state } = useContext(Context)
 
   const [items, setItems] = useState(_.compact(_.castArray(tags)))
 
   function handleSelect(value, index) {
-    console.log('handleSelect', value)
     const updated = [...items, value]
     api.updateHandoff(id, { tags: updated }).then(() => setItems(updated))
   }
 
   function handleRemove(value, index) {
-    console.log('handleRemove', value)
     const updated = _.filter(items, (v, i) => i != index)
     api.updateHandoff(id, { tags: updated }).then(() => setItems(updated))
   }
