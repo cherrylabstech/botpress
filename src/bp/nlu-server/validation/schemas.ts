@@ -1,6 +1,6 @@
 import Joi from 'joi'
 
-const EnumOccurenceSchema = Joi.object({
+const ListOccurenceSchema = Joi.object({
   name: Joi.string().required(), // ex: 'Paris', 'Montreal', 'Québec'
   synonyms: Joi.array() // ex: 'La Ville des lumières', 'City of Paris'
     .items(Joi.string())
@@ -8,10 +8,13 @@ const EnumOccurenceSchema = Joi.object({
     .default([])
 })
 
-const EnumSchema = Joi.object().keys({
+const ListEntitySchema = Joi.object().keys({
   name: Joi.string().required(), // ex: 'cities'
+  type: Joi.string()
+    .valid('list')
+    .required(),
   values: Joi.array()
-    .items(EnumOccurenceSchema)
+    .items(ListOccurenceSchema)
     .required()
     .min(1),
   fuzzy: Joi.number().default(0.9)
@@ -19,6 +22,9 @@ const EnumSchema = Joi.object().keys({
 
 const PatternSchema = Joi.object().keys({
   name: Joi.string().required(),
+  type: Joi.string()
+    .valid('pattern')
+    .required(),
   regex: Joi.string().required(),
   case_sensitive: Joi.bool().default(true),
   examples: Joi.array()
@@ -27,7 +33,9 @@ const PatternSchema = Joi.object().keys({
     .default([])
 })
 
-const VariableSchema = Joi.object().keys({
+const EntitiesSchema = Joi.alternatives().try(ListEntitySchema, PatternSchema)
+
+const SlotSchema = Joi.object().keys({
   name: Joi.string().required(),
   types: Joi.array()
     .items(Joi.string())
@@ -37,11 +45,11 @@ const VariableSchema = Joi.object().keys({
 
 const IntentSchema = Joi.object().keys({
   name: Joi.string().required(),
-  variables: Joi.array()
-    .items(VariableSchema)
+  slots: Joi.array()
+    .items(SlotSchema)
     .optional()
     .default([]),
-  examples: Joi.array()
+  utterances: Joi.array()
     .items(Joi.string())
     .required()
     .min(1)
@@ -60,12 +68,8 @@ export const TrainInputSchema = Joi.object().keys({
   topics: Joi.array()
     .items(TopicSchema)
     .required(), // train input with empty topics array just for entity extraction is allowed
-  enums: Joi.array()
-    .items(EnumSchema)
-    .optional()
-    .default([]),
-  patterns: Joi.array()
-    .items(PatternSchema)
+  entities: Joi.array()
+    .items(EntitiesSchema)
     .optional()
     .default([]),
   password: Joi.string()

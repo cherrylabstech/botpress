@@ -632,24 +632,20 @@ declare module 'botpress/sdk' {
       end: number
     }
 
-    export type SlotCollection = Dic<Slot>
-
-    export interface Predictions {
-      [context: string]: {
+    export interface TopicPrediction {
+      confidence: number
+      oos: number
+      intents: {
+        label: string
         confidence: number
-        oos: number
-        intents: {
-          label: string
-          confidence: number
-          slots: SlotCollection
-          extractor: 'exact-matcher' | 'classifier'
-        }[]
-      }
+        slots: Dic<Slot>
+        extractor: 'exact-matcher' | 'classifier'
+      }[]
     }
 
     export interface PredictOutput {
       readonly entities: Entity[]
-      readonly predictions: Predictions
+      readonly predictions: Dic<TopicPrediction>
     }
   }
 
@@ -804,7 +800,7 @@ declare module 'botpress/sdk' {
       readonly intent?: NLU.Intent
       readonly intents?: NLU.Intent[]
       readonly ambiguous?: boolean /** Predicted intents needs disambiguation */
-      readonly slots?: NLU.SlotCollection
+      readonly slots?: Dic<NLU.Slot>
 
       // pre-prediction
       readonly detectedLanguage:

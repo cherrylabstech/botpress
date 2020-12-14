@@ -1,10 +1,20 @@
+import { NLU } from 'botpress/sdk'
+
 export interface TrainInput {
   language: string
   topics: Topic[]
-  enums: Enum[]
-  patterns: Pattern[]
+  entities: (ListEntity | PatternEntity)[]
   password: string
   seed?: number
+}
+
+export type TopicPred = { name: string } & NLU.TopicPrediction
+
+export interface PredictOutput {
+  entities: NLU.Entity[]
+  topics: TopicPred[]
+  spellChecked: string
+  detectedLanguage: string
 }
 
 export interface Topic {
@@ -14,28 +24,25 @@ export interface Topic {
 
 export interface Intent {
   name: string
-  variables: Variable[]
-  examples: string[]
+  slots: Slot[]
+  utterances: string[]
 }
 
-export interface Variable {
+export interface Slot {
   name: string
   types: string[]
 }
 
-export interface Enum {
+export interface ListEntity {
   name: string
-  values: EnumOccurence[]
+  type: 'list'
+  values: { name: string; synonyms: string[] }[]
   fuzzy: number
 }
 
-export interface EnumOccurence {
+export interface PatternEntity {
   name: string
-  synonyms: string[]
-}
-
-export interface Pattern {
-  name: string
+  type: 'pattern'
   regex: string
   case_sensitive: boolean
   examples: string[]

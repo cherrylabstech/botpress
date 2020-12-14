@@ -1,4 +1,4 @@
-import { Enum, Intent, Pattern, Topic, TrainInput, Variable } from '../typings'
+import { Intent, ListEntity, PatternEntity, Slot, Topic, TrainInput } from '../typings'
 
 import validateInput from './validate'
 
@@ -7,8 +7,9 @@ import validateInput from './validate'
  * If we ever find a bug in train input validation, we'll just add some more tests.
  */
 
-const CITY_ENUM: Enum = {
+const CITY_ENUM: ListEntity = {
   name: 'city',
+  type: 'list',
   fuzzy: 1,
   values: [
     { name: 'paris', synonyms: ['city of paris', 'la ville des lumières'] },
@@ -16,33 +17,34 @@ const CITY_ENUM: Enum = {
   ]
 }
 
-const TICKET_PATTERN: Pattern = {
+const TICKET_PATTERN: PatternEntity = {
   name: 'ticket',
+  type: 'pattern',
   case_sensitive: true,
   regex: '[A-Z]{3}-[0-9]{3}', // ABC-123
   examples: ['ABC-123']
 }
 
-const VARIABLE_CITY_FROM: Variable = { name: 'city-from', types: ['city'] }
+const VARIABLE_CITY_FROM: Slot = { name: 'city-from', types: ['city'] }
 
-const VARIABLE_TICKET_PROBLEM: Variable = { name: 'tick-with-problem', types: ['ticket'] }
+const VARIABLE_TICKET_PROBLEM: Slot = { name: 'tick-with-problem', types: ['ticket'] }
 
 const INTENT_FLY: Intent = {
   name: 'fly',
-  examples: ['fly from $city-from to anywhere', 'book a flight'],
-  variables: [VARIABLE_CITY_FROM]
+  utterances: ['fly from [city of paris](city-from) to anywhere', 'book a flight'],
+  slots: [VARIABLE_CITY_FROM]
 }
 
 const INTENT_PROBLEM: Intent = {
   name: 'problem',
-  examples: ['problem with ticket $tick-with-problem', 'problem with ticket'],
-  variables: [VARIABLE_TICKET_PROBLEM]
+  utterances: ['problem with ticket $tick-with-problem', 'problem with ticket'],
+  slots: [VARIABLE_TICKET_PROBLEM]
 }
 
 const EMPTY_INTENT: Intent = {
   name: 'empty',
-  examples: ['hahahahahahaha'],
-  variables: []
+  utterances: ['hahahahahahaha'],
+  slots: []
 }
 
 const FLY_TOPIC: Topic = { name: 'fly', intents: [INTENT_FLY] }
@@ -56,8 +58,8 @@ const BOUILLON_TOPIC: Topic = {
   intents: [
     {
       name: 'vote restaurant',
-      examples: ['I vote for $restaurant-to-vote'],
-      variables: [{ name: 'restaurant-to-vote', types: ['restaurant'] }]
+      utterances: ['I vote for $restaurant-to-vote'],
+      slots: [{ name: 'restaurant-to-vote', types: ['restaurant'] }]
     }
   ]
 }
@@ -69,10 +71,9 @@ test('validate with correct format should pass', async () => {
   // arrange
   const trainInput: TrainInput = {
     topics: [FLY_TOPIC],
-    enums: [CITY_ENUM],
+    entities: [CITY_ENUM],
     language: LANG,
     password: PW,
-    patterns: [],
     seed: 42
   }
 
@@ -87,9 +88,8 @@ test('validate without pw should set pw as empty string', async () => {
   // arrange
   const trainInput: Partial<TrainInput> = {
     topics: [FLY_TOPIC],
-    enums: [CITY_ENUM],
+    entities: [CITY_ENUM],
     language: LANG,
-    patterns: [],
     seed: 42
   }
 
@@ -104,9 +104,8 @@ test('validate with empty string pw should be allowed', async () => {
   // arrange
   const trainInput: TrainInput = {
     topics: [FLY_TOPIC],
-    enums: [CITY_ENUM],
+    entities: [CITY_ENUM],
     language: LANG,
-    patterns: [],
     seed: 42,
     password: ''
   }
@@ -120,7 +119,7 @@ test('validate with empty string pw should be allowed', async () => {
 
 test('validate input without enums and patterns should pass', async () => {
   // arrange
-  const trainInput: Omit<TrainInput, 'enums' | 'patterns' | 'complexes'> = {
+  const trainInput: Omit<TrainInput, 'entities' | 'complexes'> = {
     topics: [EMPTY_TOPIC],
     language: LANG,
     password: PW,
@@ -131,19 +130,19 @@ test('validate input without enums and patterns should pass', async () => {
   const validated = await validateInput(trainInput)
 
   // assert
-  const expected: TrainInput = { ...trainInput, enums: [], patterns: [] }
+  const expected: TrainInput = { ...trainInput, entities: [] }
   expect(validated).toStrictEqual(expected)
 })
 
 test('validate input without topics or language should throw', async () => {
   // arrange
-  const withoutTopic: Omit<TrainInput, 'enums' | 'patterns' | 'topics' | 'complexes'> = {
+  const withoutTopic: Omit<TrainInput, 'entities' | 'topics' | 'complexes'> = {
     language: LANG,
     password: PW,
     seed: 42
   }
 
-  const withoutLang: Omit<TrainInput, 'enums' | 'patterns' | 'language' | 'complexes'> = {
+  const withoutLang: Omit<TrainInput, 'entities' | 'language' | 'complexes'> = {
     topics: [FLY_TOPIC],
     password: PW,
     seed: 42
@@ -160,10 +159,9 @@ test('validate without intent should fail', async () => {
 
   const trainInput: TrainInput = {
     topics: [withoutIntent],
-    enums: [CITY_ENUM],
+    entities: [CITY_ENUM],
     language: LANG,
     password: PW,
-    patterns: [],
     seed: 42
   }
 
@@ -173,25 +171,23 @@ test('validate without intent should fail', async () => {
 
 test('validate enum without values or patterns without regexes or empty complex should fail', async () => {
   // arrange
-  const incompleteEnum: Enum = { name: 'city' } as Enum
+  const incompleteEnum: ListEntity = { name: 'city' } as ListEntity
 
-  const incompletePattern: Pattern = { name: 'password' } as Pattern
+  const incompletePattern: PatternEntity = { name: 'password' } as PatternEntity
 
   const withoutValues: TrainInput = {
     topics: [FLY_TOPIC],
-    enums: [incompleteEnum],
+    entities: [incompleteEnum],
     language: LANG,
     password: PW,
-    patterns: [],
     seed: 42
   }
 
   const withoutRegexes: TrainInput = {
     topics: [PROBLEM_TOPIC],
-    enums: [],
     language: LANG,
     password: PW,
-    patterns: [incompletePattern],
+    entities: [incompletePattern],
     seed: 42
   }
 
@@ -204,10 +200,9 @@ test('validate with an unexisting referenced enum should throw', async () => {
   // arrange
   const trainInput: TrainInput = {
     topics: [FLY_TOPIC],
-    enums: [],
     language: LANG,
     password: PW,
-    patterns: [TICKET_PATTERN],
+    entities: [TICKET_PATTERN],
     seed: 42
   }
 
@@ -219,10 +214,9 @@ test('validate with an unexisting referenced pattern should throw', async () => 
   // arrange
   const trainInput: TrainInput = {
     topics: [PROBLEM_TOPIC],
-    enums: [CITY_ENUM],
+    entities: [CITY_ENUM],
     language: LANG,
     password: PW,
-    patterns: [],
     seed: 42
   }
 
@@ -239,16 +233,15 @@ test('validate with an unexisting referenced complex should throw', async () => 
         intents: [
           {
             name: 'vote restaurant',
-            examples: ['I vote for [Burger king](restaurant-to-vote)'],
-            variables: [{ name: 'restaurant-to-vote', types: ['restaurant'] }]
+            utterances: ['I vote for [Burger king](restaurant-to-vote)'],
+            slots: [{ name: 'restaurant-to-vote', types: ['restaurant'] }]
           }
         ]
       }
     ],
-    enums: [CITY_ENUM],
+    entities: [CITY_ENUM],
     language: LANG,
     password: PW,
-    patterns: [],
     seed: 42
   }
 
@@ -258,14 +251,13 @@ test('validate with an unexisting referenced complex should throw', async () => 
 
 test('validate with correct format but unexpected property should fail', async () => {
   // arrange
-  const trainInput: TrainInput & { entities: any[] } = {
+  const trainInput: TrainInput & { someProperty: any[] } = {
     topics: [FLY_TOPIC],
-    enums: [CITY_ENUM],
+    entities: [CITY_ENUM],
     language: LANG,
     password: PW,
-    patterns: [],
     seed: 42,
-    entities: []
+    someProperty: []
   }
 
   // act & assert

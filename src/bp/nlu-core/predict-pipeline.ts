@@ -259,7 +259,7 @@ function MapStepToOutput(step: SlotStep): NLU.PredictOutput {
   // legacy pre-ndu
   const entities = step.utterance.entities.map(entitiesMapper)
 
-  const slotsCollectionReducer = (slots: NLU.SlotCollection, s: SlotExtractionResult): NLU.SlotCollection => {
+  const slotsCollectionReducer = (slots: _.Dictionary<NLU.Slot>, s: SlotExtractionResult): _.Dictionary<NLU.Slot> => {
     if (slots[s.slot.name] && slots[s.slot.name].confidence > s.slot.confidence) {
       // we keep only the most confident slots
       return slots
@@ -279,7 +279,7 @@ function MapStepToOutput(step: SlotStep): NLU.PredictOutput {
     }
   }
 
-  const predictions: NLU.Predictions = step.ctx_predictions!.reduce((preds, current) => {
+  const predictions: _.Dictionary<NLU.TopicPrediction> = step.ctx_predictions!.reduce((preds, current) => {
     const { label, confidence } = current
 
     const intentPred = step.intent_predictions[label]

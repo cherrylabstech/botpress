@@ -18,7 +18,7 @@ Content-Type: application/json
       "intents": [
         {
           "name": "fruit-is-moldy",
-          "examples": [
+          "utterances": [
             "fruit is moldy",
             "this fruit is moldy",
             "this [banana](fruit) is not good to eat",
@@ -26,7 +26,7 @@ Content-Type: application/json
             "theses [grapes](fruit) look bad",
             "theses [apples](fruit) look soo moldy"
           ],
-          "variables": [
+          "slots": [
             {
               "name": "moldy_fruit",
               "types": ["fruits"]
@@ -35,8 +35,8 @@ Content-Type: application/json
         },
         {
           "name": "hello",
-          "variables": [],
-          "examples": [
+          "slots": [],
+          "utterances": [
             "good day!",
             "good morning",
             "holla",
@@ -52,7 +52,7 @@ Content-Type: application/json
         },
         {
           "name": "talk-to-manager",
-          "examples": [
+          "utterances": [
             "talk to manager",
             "I want to talk to the manager",
             "Who's your boss?",
@@ -62,11 +62,11 @@ Content-Type: application/json
             "I wanna speak to manager please",
             "let me speak to your boss or someone"
           ],
-          "variables": []
+          "slots": []
         },
         {
           "name": "where-is",
-          "examples": [
+          "utterances": [
             "where is [milk](thing_to_search) ?",
             "where are [apples](thing_to_search) ?",
             "can you help me find [apples](thing_to_search) ?",
@@ -74,7 +74,7 @@ Content-Type: application/json
             "where is the [milk](thing_to_search) ?",
             "where are the [milk](thing_to_search) ?"
           ],
-          "variables": [
+          "slots": [
             {
               "name": "thing_to_search",
               "types": ["fruits", "any"]
@@ -84,9 +84,10 @@ Content-Type: application/json
       ]
     }
   ],
-  "enums": [
+  "entities": [
     {
       "name": "fruits",
+      "type": "list",
       "fuzzy": 0.9,
       "values": [
         { "name": "banana", "synonyms": ["bananas"] },
@@ -94,6 +95,13 @@ Content-Type: application/json
         { "name": "grape", "synonyms": ["grapes"] },
         { "name": "orange", "synonyms": ["oranges"] }
       ]
+    },
+    { 
+      "name": "employee-number", 
+      "type": "pattern", 
+      "regex": "[a-zA-Z]{3}-[0-9]{3}",
+      "case_sensitive": false,
+      "examples": ["abc-123"] 
     }
   ],
   "password": "123456",
@@ -124,6 +132,6 @@ POST {{api}}/predict/{{modelId}}
 Content-Type: application/json
 
 {
-  "texts" : ["These grapes look moldy", "Can I talk with the person in charge?"],
+  "texts" : ["These grapes look moldy", "Can I talk with the person in charge?", "Have you seen employee xyz-987 ?"],
   "password": "123456"
 }

@@ -1,7 +1,8 @@
 import { NLU } from 'botpress/sdk'
 import _ from 'lodash'
 
-import { Enum, Intent, Pattern, TrainInput, Variable } from './typings'
+import { Intent, ListEntity, PatternEntity, PredictOutput, Slot, TopicPred, TrainInput } from './typings'
+import { isList, isPattern } from './validation/utils'
 
 interface BpTrainInput {
   intents: NLU.IntentDefinition[]
@@ -11,7 +12,12 @@ interface BpTrainInput {
   seed?: number
 }
 
-const mapVariable = (variable: Variable): NLU.SlotDefinition => {
+interface BpPredictOutput extends NLU.PredictOutput {
+  spellChecked: string
+  detectedLanguage: string
+}
+
+const mapVariable = (variable: Slot): NLU.SlotDefinition => {
   const { name, types } = variable
   return {
     entities: types,
@@ -21,21 +27,21 @@ const mapVariable = (variable: Variable): NLU.SlotDefinition => {
 }
 
 const makeIntentMapper = (ctx: string, lang: string) => (intent: Intent): NLU.IntentDefinition => {
-  const { name, examples, variables } = intent
+  const { name, utterances, slots } = intent
 
   return {
     contexts: [ctx],
     filename: '',
     name,
     utterances: {
-      [lang]: examples
+      [lang]: utterances
     },
-    slots: variables.map(mapVariable)
+    slots: slots.map(mapVariable)
   }
 }
 
-const mapEnum = (enumDef: Enum): NLU.EntityDefinition => {
-  const { name, fuzzy, values } = enumDef
+const mapList = (listDef: ListEntity): NLU.EntityDefinition => {
+  const { name, fuzzy, values } = listDef
 
   return {
     id: name,
@@ -46,7 +52,7 @@ const mapEnum = (enumDef: Enum): NLU.EntityDefinition => {
   }
 }
 
-const mapPattern = (pattern: Pattern): NLU.EntityDefinition => {
+const mapPattern = (pattern: PatternEntity): NLU.EntityDefinition => {
   const { name, regex, case_sensitive } = pattern
 
   return {
@@ -59,11 +65,10 @@ const mapPattern = (pattern: Pattern): NLU.EntityDefinition => {
 }
 
 export function mapTrainInput(trainInput: TrainInput): BpTrainInput {
-  const { language, topics, enums, patterns, seed, password } = trainInput
+  const { language, topics, entities, seed, password } = trainInput
 
-  const listEntities = enums.map(mapEnum)
-  const patternEntities = patterns.map(mapPattern)
-  const entities = [...listEntities, ...patternEntities]
+  const listEntities = entities.filter(isList).map(mapList)
+  const patternEntities = entities.filter(isPattern).map(mapPattern)
 
   const intents: NLU.IntentDefinition[] = _.flatMap(topics, t => {
     const intentMapper = makeIntentMapper(t.name, language)
@@ -72,9 +77,15 @@ export function mapTrainInput(trainInput: TrainInput): BpTrainInput {
 
   return {
     language,
-    entities,
+    entities: [...listEntities, ...patternEntities],
     intents,
     seed,
     password
   }
+}
+
+export function mapPredictOutput(predictOutput: BpPredictOutput): PredictOutput {
+  const { entities, predictions, spellChecked, detectedLanguage } = predictOutput
+  const topics: TopicPred[] = Object.entries(predictions).map(([name, value]) => ({ name, ...value }))
+  return { entities, topics, spellChecked, detectedLanguage }
 }

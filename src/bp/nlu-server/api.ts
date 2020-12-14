@@ -15,7 +15,8 @@ import ModelRepository from './model-repo'
 import removeNoneIntent from './remove-none'
 import TrainService from './train-service'
 import TrainSessionService from './train-session-service'
-import { mapTrainInput } from './utils'
+import { PredictOutput } from './typings'
+import { mapPredictOutput, mapTrainInput } from './utils'
 import validateInput from './validation/validate'
 
 export interface APIOptions {
@@ -158,7 +159,7 @@ export default async function(options: APIOptions, engine: Engine) {
         return res.send({ success: true })
       }
 
-      res.status(404).send({ success: true, error: `no current training for model id: ${stringId}` })
+      res.status(404).send({ success: false, error: `no current training for model id: ${stringId}` })
     } catch (err) {
       res.status(500).send({ success: false, error: err.message })
     }
@@ -185,14 +186,16 @@ export default async function(options: APIOptions, engine: Engine) {
         await engine.loadModel(model)
       }
 
-      const rawPredictions = await Promise.map(texts as string[], async t => {
-        const spellChecked = await engine.spellCheck(t, modelId)
-        const output = await engine.predict(t, modelId)
-        return { ...output, spellChecked }
+      const rawPredictions = await Promise.map(texts as string[], async utterance => {
+        const detectedLanguage = await engine.detectLanguage(utterance, { [modelId.languageCode]: modelId })
+        const spellChecked = await engine.spellCheck(utterance, modelId)
+        const rawOutput = await engine.predict(utterance, modelId)
+        const output = removeNoneIntent(rawOutput)
+        return { ...output, utterance, spellChecked, detectedLanguage }
       })
-      const withoutNone = rawPredictions.map(removeNoneIntent)
 
-      return res.send({ success: true, predictions: withoutNone })
+      const predictions: PredictOutput[] = rawPredictions.map(mapPredictOutput)
+      return res.send({ success: true, predictions })
     } catch (err) {
       res.status(500).send({ success: false, error: err.message })
     }
