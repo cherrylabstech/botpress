@@ -10,9 +10,15 @@ export interface TrainInput {
 
 export type TopicPred = { name: string } & NLU.TopicPrediction
 
+export interface PredictInput {
+  utterances: string[]
+  password: string
+}
+
 export interface PredictOutput {
   entities: NLU.Entity[]
   topics: TopicPred[]
+  utterance: string
   spellChecked: string
   detectedLanguage: string
 }

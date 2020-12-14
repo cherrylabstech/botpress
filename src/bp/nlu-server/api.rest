@@ -132,6 +132,6 @@ POST {{api}}/predict/{{modelId}}
 Content-Type: application/json
 
 {
-  "texts" : ["These grapes look moldy", "Can I talk with the person in charge?", "Have you seen employee xyz-987 ?"],
+  "utterances" : ["These grapes look moldy", "Can I talk with the person in charge?", "Have you seen employee xyz-987 ?"],
   "password": "123456"
 }

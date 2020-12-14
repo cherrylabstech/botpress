@@ -17,7 +17,7 @@ import TrainService from './train-service'
 import TrainSessionService from './train-session-service'
 import { PredictOutput } from './typings'
 import { mapPredictOutput, mapTrainInput } from './utils'
-import validateInput from './validation/validate'
+import { validatePredInput, validateTrainInput } from './validation/validate'
 
 export interface APIOptions {
   host: string
@@ -89,7 +89,7 @@ export default async function(options: APIOptions, engine: Engine) {
 
   router.post('/train', async (req, res) => {
     try {
-      const input = await validateInput(req.body)
+      const input = await validateTrainInput(req.body)
       const { intents, entities, seed, language, password } = mapTrainInput(input)
 
       const pickedSeed = seed ?? Math.round(Math.random() * 10000)
@@ -168,11 +168,11 @@ export default async function(options: APIOptions, engine: Engine) {
   router.post('/predict/:modelId', async (req, res) => {
     try {
       const { modelId: stringId } = req.params
-      const { texts, password } = req.body
+      const { utterances, password } = await validatePredInput(req.body)
 
-      if (!_.isArray(texts) || (options.batchSize > 0 && texts.length > options.batchSize)) {
+      if (!_.isArray(utterances) || (options.batchSize > 0 && utterances.length > options.batchSize)) {
         throw new Error(
-          `Batch size of ${texts.length} is larger than the allowed maximum batch size (${options.batchSize}).`
+          `Batch size of ${utterances.length} is larger than the allowed maximum batch size (${options.batchSize}).`
         )
       }
 
@@ -186,7 +186,7 @@ export default async function(options: APIOptions, engine: Engine) {
         await engine.loadModel(model)
       }
 
-      const rawPredictions = await Promise.map(texts as string[], async utterance => {
+      const rawPredictions = await Promise.map(utterances as string[], async utterance => {
         const detectedLanguage = await engine.detectLanguage(utterance, { [modelId.languageCode]: modelId })
         const spellChecked = await engine.spellCheck(utterance, modelId)
         const rawOutput = await engine.predict(utterance, modelId)

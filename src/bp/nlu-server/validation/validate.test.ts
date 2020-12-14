@@ -1,6 +1,6 @@
 import { Intent, ListEntity, PatternEntity, Slot, Topic, TrainInput } from '../typings'
 
-import validateInput from './validate'
+import { validateTrainInput } from './validate'
 
 /**
  * These unit tests don't cover all possible scenarios of training input, but they to more good than bad.
@@ -78,7 +78,7 @@ test('validate with correct format should pass', async () => {
   }
 
   // act
-  const validated = await validateInput(trainInput)
+  const validated = await validateTrainInput(trainInput)
 
   // assert
   expect(validated).toStrictEqual(trainInput)
@@ -94,7 +94,7 @@ test('validate without pw should set pw as empty string', async () => {
   }
 
   // act
-  const validated = await validateInput(trainInput)
+  const validated = await validateTrainInput(trainInput)
 
   // assert
   expect(validated.password).toBe('')
@@ -111,7 +111,7 @@ test('validate with empty string pw should be allowed', async () => {
   }
 
   // act
-  const validated = await validateInput(trainInput)
+  const validated = await validateTrainInput(trainInput)
 
   // assert
   expect(validated.password).toBe('')
@@ -127,7 +127,7 @@ test('validate input without enums and patterns should pass', async () => {
   }
 
   // act
-  const validated = await validateInput(trainInput)
+  const validated = await validateTrainInput(trainInput)
 
   // assert
   const expected: TrainInput = { ...trainInput, entities: [] }
@@ -149,8 +149,8 @@ test('validate input without topics or language should throw', async () => {
   }
 
   // act & assert
-  await expect(validateInput(withoutTopic)).rejects.toThrow()
-  await expect(validateInput(withoutLang)).rejects.toThrow()
+  await expect(validateTrainInput(withoutTopic)).rejects.toThrow()
+  await expect(validateTrainInput(withoutLang)).rejects.toThrow()
 })
 
 test('validate without intent should fail', async () => {
@@ -166,7 +166,7 @@ test('validate without intent should fail', async () => {
   }
 
   // act & assert
-  await expect(validateInput(trainInput)).rejects.toThrow()
+  await expect(validateTrainInput(trainInput)).rejects.toThrow()
 })
 
 test('validate enum without values or patterns without regexes or empty complex should fail', async () => {
@@ -192,8 +192,8 @@ test('validate enum without values or patterns without regexes or empty complex 
   }
 
   // act & assert
-  await expect(validateInput(withoutValues)).rejects.toThrow()
-  await expect(validateInput(withoutRegexes)).rejects.toThrow()
+  await expect(validateTrainInput(withoutValues)).rejects.toThrow()
+  await expect(validateTrainInput(withoutRegexes)).rejects.toThrow()
 })
 
 test('validate with an unexisting referenced enum should throw', async () => {
@@ -207,7 +207,7 @@ test('validate with an unexisting referenced enum should throw', async () => {
   }
 
   // act & assert
-  await expect(validateInput(trainInput)).rejects.toThrow()
+  await expect(validateTrainInput(trainInput)).rejects.toThrow()
 })
 
 test('validate with an unexisting referenced pattern should throw', async () => {
@@ -221,7 +221,7 @@ test('validate with an unexisting referenced pattern should throw', async () => 
   }
 
   // act & assert
-  await expect(validateInput(trainInput)).rejects.toThrow()
+  await expect(validateTrainInput(trainInput)).rejects.toThrow()
 })
 
 test('validate with an unexisting referenced complex should throw', async () => {
@@ -246,7 +246,7 @@ test('validate with an unexisting referenced complex should throw', async () => 
   }
 
   // act & assert
-  await expect(validateInput(trainInput)).rejects.toThrow()
+  await expect(validateTrainInput(trainInput)).rejects.toThrow()
 })
 
 test('validate with correct format but unexpected property should fail', async () => {
@@ -261,5 +261,5 @@ test('validate with correct format but unexpected property should fail', async (
   }
 
   // act & assert
-  await expect(validateInput(trainInput)).rejects.toThrow()
+  await expect(validateTrainInput(trainInput)).rejects.toThrow()
 })

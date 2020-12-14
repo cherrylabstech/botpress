@@ -15,6 +15,7 @@ interface BpTrainInput {
 interface BpPredictOutput extends NLU.PredictOutput {
   spellChecked: string
   detectedLanguage: string
+  utterance: string
 }
 
 const mapVariable = (variable: Slot): NLU.SlotDefinition => {
@@ -85,7 +86,7 @@ export function mapTrainInput(trainInput: TrainInput): BpTrainInput {
 }
 
 export function mapPredictOutput(predictOutput: BpPredictOutput): PredictOutput {
-  const { entities, predictions, spellChecked, detectedLanguage } = predictOutput
+  const { entities, predictions, spellChecked, detectedLanguage, utterance } = predictOutput
   const topics: TopicPred[] = Object.entries(predictions).map(([name, value]) => ({ name, ...value }))
-  return { entities, topics, spellChecked, detectedLanguage }
+  return { entities, topics, spellChecked, detectedLanguage, utterance }
 }
