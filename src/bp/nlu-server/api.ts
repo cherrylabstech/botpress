@@ -184,7 +184,7 @@ export default async function(options: APIOptions, engine: Engine) {
         }
 
         await engine.loadModel(model)
-      }
+      } // TODO: fix this; if model is already loaded in engine, there's no password validation
 
       const rawPredictions = await Promise.map(utterances as string[], async utterance => {
         const detectedLanguage = await engine.detectLanguage(utterance, { [modelId.languageCode]: modelId })
