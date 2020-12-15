@@ -8,7 +8,7 @@ phases:
   install:
     runtime-versions:
       docker: 19
-      nodejs: 12.18
+      nodejs: 12.x
   pre_build:
     commands:
       - echo Logging in to Amazon ECR...
