@@ -1,0 +1,25 @@
+version: 0.2
+
+env:
+  variables:
+    IMAGE_REPO_NAME: "ae-lab-core"
+
+phases:
+  install:
+    runtime-versions:
+      docker: 18
+  pre_build:
+    commands:
+      - echo Logging in to Amazon ECR...
+  build:
+    commands:
+      - echo Build started on `date`
+      - echo Building the Docker image...
+      - yarn
+      - yarn build
+  post_build:
+    commands:
+      - echo Build completed on `date`
+      - echo Pushing the Docker images...
+ artifacts:
+  files: imagedefinitions.json
