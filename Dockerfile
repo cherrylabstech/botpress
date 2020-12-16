@@ -1,4 +1,4 @@
-FROM node:12.20-alpine
+FROM node:10.18-alpine
 #WORKDIR /botpress
 #CMD ["./bp"]
 #FROM node:10-alpine
