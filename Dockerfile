@@ -1,4 +1,4 @@
-FROM botpress/server:v12_5_0
+FROM node:12.20-alpine
 #WORKDIR /botpress
 #CMD ["./bp"]
 #FROM node:10-alpine
