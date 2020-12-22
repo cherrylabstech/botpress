@@ -62,7 +62,8 @@ export default class AuthService {
   }
 
   async isFirstUser() {
-    return (await this.getAllUsers()).length === 0
+    return true
+    //return (await this.getAllUsers()).length === 0
   }
 
   async getAllUsers() {
