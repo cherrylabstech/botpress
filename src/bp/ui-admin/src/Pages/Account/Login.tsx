@@ -11,6 +11,7 @@ import { LoginContainer } from '../Layouts/LoginContainer'
 
 import { AuthMethodPicker } from './AuthMethodPicker'
 import { LoginForm } from './LoginForm'
+import { Button } from '@blueprintjs/core'
 
 type Props = {
   auth: BasicAuthentication
@@ -24,6 +25,7 @@ const Login: FC<Props> = props => {
   const [loginUrl, setLoginUrl] = useState('')
   const [redirectTo, setRedirectTo] = useState<string>()
   const [error, setError] = useState<string | null>()
+  const registerUrl = '/register/basic/default'
 
   useEffect(() => {
     onStrategyChanged()
@@ -96,8 +98,19 @@ const Login: FC<Props> = props => {
       return (window.location.href = `${api.getApiPath()}/auth/redirect/${strategyType}/${strategyId}`)
     }
 
-    if (isFirstUser) {
+    /**
+     * isFirstUser - changing the logic to access the login page multiple times.
+     * 
+     *    if (isFirstUser) {
       props.history.push({ pathname: '/register', state: { registerUrl } })
+    } else {
+      setLoginUrl(strategy.loginUrl!)
+    }
+     */
+
+    if (isFirstUser) {
+      // props.history.push({ pathname: '/register', state: { registerUrl } })
+      setLoginUrl(strategy.loginUrl!)
     } else {
       setLoginUrl(strategy.loginUrl!)
     }
@@ -120,13 +133,30 @@ const Login: FC<Props> = props => {
     return null
   }
 
+  const goTosignIn = e => {
+    e.preventDefault()
+
+    console.log('ok')
+    props.history.push({ pathname: '/register', state: { registerUrl } })
+  }
+
   return (
     <LoginContainer title={lang.tr('admin.login')} error={error} poweredBy={true}>
       {loginUrl ? (
-        <LoginForm onLogin={loginUser} />
+        <div>
+          <LoginForm onLogin={loginUser} />
+          <Button
+            tabIndex={4}
+            type="button"
+            id="btn-signin"
+            text={lang.tr('admin.createAccount')}
+            onClick={goTosignIn}
+          />
+        </div>
       ) : (
         <AuthMethodPicker strategies={strategies} onStrategySelected={updateUrlStrategy} />
       )}
+      ,
     </LoginContainer>
   )
 }

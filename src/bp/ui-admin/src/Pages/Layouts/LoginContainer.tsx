@@ -14,11 +14,16 @@ interface Props {
 
 export const LoginContainer: FC<Props> = props => {
   return (
-    <div className="centered-container">
+    <div className="centered-container auth-background">
       <div className="middle">
         <div className="inner">
-          <img className="logo" src={logo} alt="loading" />
           <Card body>
+            <img
+              className="logo"
+              src="https://s3-eu-west-1.amazonaws.com/userlike-cdn-blog/chatbot-design/header-chatbot-design.png"
+              width="100"
+              alt="loading"
+            />
             <CardBody className="login-box">
               <div>
                 <CardTitle>
@@ -33,7 +38,7 @@ export const LoginContainer: FC<Props> = props => {
           {props.poweredBy && (
             <div className="homepage">
               <p>
-                {lang.tr('admin.poweredBy')} <a href="https://botpress.com">Botpress</a>
+                {lang.tr('admin.poweredBy')} <a href="https://asista.com">Asista</a>
               </p>
             </div>
           )}

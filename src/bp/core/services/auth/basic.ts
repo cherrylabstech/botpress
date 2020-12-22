@@ -53,11 +53,13 @@ export default class StrategyBasic {
       '/register/basic/:strategyId',
       this.asyncMiddleware(async (req: RequestWithUser, res) => {
         const { strategyId } = req.params
-
+        /**
+          * 
+          * The below code is edited to create more account
         if (!(await this.authService.isFirstUser())) {
           return res.status(403).send('Registration is disabled')
         }
-
+             */
         const { email, password } = req.body
         if (email.length < 4 || password.length < 4) {
           throw new BadRequestError('Email or password is too short.')

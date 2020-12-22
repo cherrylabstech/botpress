@@ -1,6 +1,8 @@
 import { Button, FormGroup, InputGroup, Intent } from '@blueprintjs/core'
 import { lang } from 'botpress/shared'
 import React, { FC, useState } from 'react'
+import { RouteComponentProps } from 'react-router'
+import { Redirect } from 'react-router-dom'
 
 interface Props {
   onLogin: (email, password) => void
