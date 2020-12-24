@@ -7,7 +7,7 @@ export class StrategyUserTable {
       table.string('password').nullable()
       table.string('salt').nullable()
       table.string('strategy').notNullable()
-      table.specificType('intarray', 'bot_id')
+      table.string('strategy1').notNullable()
       table.json('attributes').notNullable()
       table.timestamps(true, true)
       created = true
