@@ -48,19 +48,37 @@ export class WorkspaceService {
   ) {}
 
   async initialize(): Promise<void> {
-    await this.getWorkspaces().catch(async () => {
+    await this.getWorkspaces('default').catch(async () => {
       await this.save([defaultWorkspace])
       this.logger.info('Created workspace')
     })
   }
 
-  async getWorkspaces(): Promise<Workspace[]> {
-    const workspaces = await this.ghost.global().readFileAsObject<Workspace[]>('/', 'workspaces.json')
-    if (!workspaces || !workspaces.length) {
-      throw new Error('No workspace found in workspaces.json')
-    }
+  async getWorkspaces(email: string): Promise<Workspace[]> {
+    //const workspaces = await this.ghost.global().readFileAsObject<Workspace[]>('/', `default_workspaces.json`)
+    const workspaces = await this.ghost.global().readFileAsObject<Workspace[]>('/', `${email}_workspaces.json`)
+    if (email) {
+      console.log('===================Workspace========================', `${email}`)
+      // throw new Error('No workspace found in workspaces.json')
+      const newWorkspace = [
+        {
+          ...defaultWorkspace,
+          id: email
+        }
+      ]
 
+      const workspaces = await this.saveNew(newWorkspace, email)
+
+      return []
+    }
+    //const workspaces = await this.ghost.global().readFileAsObject<Workspace[]>('/', `${email}_workspaces.json`)
+    //const workspaces = await this.ghost.global().readFileAsObject<Workspace[]>('/', `default_workspaces.json`)
     return workspaces
+  }
+
+  async saveNew(workspaces: Workspace[], email: String): Promise<void> {
+    console.log(`${email} -- email in save new`)
+    return this.ghost.global().upsertFile('/', `${email}_workspaces.json`, JSON.stringify(workspaces, undefined, 2))
   }
 
   async save(workspaces: Workspace[]): Promise<void> {
@@ -68,16 +86,19 @@ export class WorkspaceService {
   }
 
   async mergeWorkspaceConfig(workspaceId: string, partialData: Partial<Workspace>) {
-    const workspaces = await this.getWorkspaces()
+    const workspaces = await this.getWorkspaces(workspaceId)
     if (!workspaces.find(x => x.id === workspaceId)) {
       throw new NotFoundError("Workspace doesn't exist")
     }
 
-    return this.save(workspaces.map(wks => (wks.id === workspaceId ? { ...wks, ...partialData } : wks)))
+    return this.saveNew(
+      workspaces.map(wks => (wks.id === workspaceId ? { ...wks, ...partialData } : wks)),
+      workspaceId
+    )
   }
 
   async addBotRef(botId: string, workspaceId: string): Promise<void> {
-    const workspaces = await this.getWorkspaces()
+    const workspaces = await this.getWorkspaces(workspaceId)
     const workspace = workspaces.find(x => x.id === workspaceId)
 
     if (!workspace) {
@@ -91,7 +112,7 @@ export class WorkspaceService {
   }
 
   async deleteBotRef(botId: any): Promise<void> {
-    const workspaces = await this.getWorkspaces()
+    const workspaces = await this.getWorkspaces(botId)
 
     const botWorkspaceId = await this.getBotWorkspaceId(botId)
     const workspace = workspaces.find(x => x.id === botWorkspaceId)
@@ -110,7 +131,7 @@ export class WorkspaceService {
 
   async getBotRefs(workspaceId?: string): Promise<string[]> {
     if (!workspaceId) {
-      const workspace = await this.getWorkspaces()
+      const workspace = await this.getWorkspaces('default')
       return _.flatten(workspace.map(x => x.bots))
     } else {
       const workspace = await this.findWorkspace(workspaceId)
@@ -119,7 +140,7 @@ export class WorkspaceService {
   }
 
   async findWorkspace(workspaceId: string): Promise<Workspace> {
-    const workspaces = await this.getWorkspaces()
+    const workspaces = await this.getWorkspaces(workspaceId)
 
     const workspace = workspaces.find(x => x.id === workspaceId)
     if (!workspace) {
@@ -130,13 +151,13 @@ export class WorkspaceService {
   }
 
   async findWorkspaceName(workspaceId: string): Promise<string> {
-    const all = await this.getWorkspaces()
+    const all = await this.getWorkspaces(workspaceId)
     const workspace = all.find(x => x.id === workspaceId)
     return (workspace && workspace.name) || workspaceId
   }
 
   async createWorkspace(workspace: CreateWorkspace): Promise<void> {
-    const workspaces = await this.getWorkspaces()
+    const workspaces = await this.getWorkspaces(workspace.id)
     if (workspaces.find(x => x.id === workspace.id)) {
       throw new ConflictError(`A workspace with that id "${workspace.id}" already exists`)
     }
@@ -156,7 +177,7 @@ export class WorkspaceService {
   }
 
   async deleteWorkspace(workspaceId: string): Promise<void> {
-    const workspaces = await this.getWorkspaces()
+    const workspaces = await this.getWorkspaces(workspaceId)
     if (!workspaces.find(x => x.id === workspaceId)) {
       throw new NotFoundError("Workspace doesn't exist")
     }
@@ -324,7 +345,7 @@ export class WorkspaceService {
   }
 
   async getBotWorkspaceId(botId: string) {
-    const workspaces = await this.getWorkspaces()
+    const workspaces = await this.getWorkspaces(botId)
     const workspace = workspaces.find(x => !!x.bots.find(bot => bot === botId))
     return workspace?.id ?? 'default'
   }
@@ -335,7 +356,7 @@ export class WorkspaceService {
   }
 
   async getPipeline(workspaceId: string): Promise<Pipeline | undefined> {
-    const workspaces = await this.getWorkspaces()
+    const workspaces = await this.getWorkspaces(workspaceId)
     const workspace = workspaces.find(x => x.id === workspaceId)
 
     return workspace?.pipeline
@@ -352,7 +373,7 @@ export class WorkspaceService {
       return this.getWorkspaceUsers(workspaceId)
     }
 
-    const workspaces = await this.getWorkspaces()
+    const workspaces = await this.getWorkspaces(workspaceId || 'default')
     let wu: WorkspaceUser[] = []
     for (const w of workspaces) {
       const u = await this.getWorkspaceUsers(w.id)

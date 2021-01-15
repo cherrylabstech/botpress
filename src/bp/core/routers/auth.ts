@@ -136,14 +136,17 @@ export class AuthRouter extends CustomRouter {
       this.checkTokenHeader,
       this.asyncMiddleware(async (req: RequestWithUser, res) => {
         const { email, strategy, isSuperAdmin } = req.tokenUser!
+        console.log(`${email} -- email at me/workspace`)
 
-        if (!isSuperAdmin) {
-          return res.send(await this.workspaceService.getUserWorkspaces(email, strategy))
-        }
+        /* changing the line below */
+        // if (!isSuperAdmin) {
+        //   return res.send(await this.workspaceService.getUserWorkspaces(email, strategy))
+
+        // }
 
         res.send(
-          await Promise.map(this.workspaceService.getWorkspaces(), w => {
-            return { email, strategy, workspace: w.id, role: w.adminRole, workspaceName: w.name }
+          await Promise.map(this.workspaceService.getWorkspaces(email), w => {
+            return { email, strategy, workspace: email, role: w.adminRole, workspaceName: w.name }
           })
         )
       })

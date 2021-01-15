@@ -33,7 +33,7 @@ export interface Workspace {
   id: string
   name: string
   description?: string
-  audience: 'internal' | 'external'
+  audience: string
   roles: AuthRole[]
   defaultRole: string
   adminRole: string

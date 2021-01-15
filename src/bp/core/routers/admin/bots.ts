@@ -85,7 +85,7 @@ export class BotsRouter extends CustomRouter {
       '/byWorkspaces',
       assertSuperAdmin,
       this.asyncMiddleware(async (_req, res) => {
-        const workspaces = await this.workspaceService.getWorkspaces()
+        const workspaces = await this.workspaceService.getWorkspaces('default')
         const bots = workspaces.reduce((obj, workspace) => {
           obj[workspace.id] = workspace.bots
           return obj

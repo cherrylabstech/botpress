@@ -143,11 +143,11 @@ export class LegacyStats extends TelemetryStats {
   }
 
   private async getWorkspacesCount(): Promise<number> {
-    return (await this.workspaceService.getWorkspaces()).length
+    return (await this.workspaceService.getWorkspaces('default')).length
   }
 
   private async getPipelineStagesCount(): Promise<number> {
-    const workspaces = await this.workspaceService.getWorkspaces()
+    const workspaces = await this.workspaceService.getWorkspaces('default')
     return workspaces.reduce((acc, workspace) => {
       return acc + workspace.pipeline.length
     }, 0)

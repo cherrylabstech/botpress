@@ -29,7 +29,7 @@ export class WorkspacesRouter extends CustomRouter {
     router.get(
       '/',
       this.asyncMiddleware(async (req, res) => {
-        res.send(await this.workspaceService.getWorkspaces())
+        res.send(await this.workspaceService.getWorkspaces('default'))
       })
     )
 

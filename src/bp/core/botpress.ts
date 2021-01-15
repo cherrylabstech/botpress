@@ -292,7 +292,7 @@ export class Botpress {
 
     const bots = await this.botService.getBots()
 
-    for (const workspace of await this.workspaceService.getWorkspaces()) {
+    for (const workspace of await this.workspaceService.getWorkspaces('default')) {
       const pipeline = await this.workspaceService.getPipeline(workspace.id)
       if (pipeline && pipeline.length > 4) {
         this.logger.warn(
@@ -307,8 +307,7 @@ export class Botpress {
     disabledBots.forEach(botId => BotService.setBotStatus(botId, 'disabled'))
 
     this.logger.info(
-      `Discovered ${botsToMount.length} bot${botsToMount.length === 1 ? '' : 's'}${
-        botsToMount.length ? `, mounting ${botsToMount.length === 1 ? 'it' : 'them'}...` : ''
+      `Discovered ${botsToMount.length} bot${botsToMount.length === 1 ? '' : 's'}${botsToMount.length ? `, mounting ${botsToMount.length === 1 ? 'it' : 'them'}...` : ''
       }`
     )
 

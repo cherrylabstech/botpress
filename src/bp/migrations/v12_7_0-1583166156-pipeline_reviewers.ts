@@ -10,7 +10,7 @@ const migration: Migration = {
   },
   up: async ({ inversify }: MigrationOpts) => {
     const workspaceService = inversify.get<WorkspaceService>(TYPES.WorkspaceService)
-    const workspaces = await workspaceService.getWorkspaces()
+    const workspaces = await workspaceService.getWorkspaces('default')
     let changed = false
 
     for (const workspace of workspaces) {
